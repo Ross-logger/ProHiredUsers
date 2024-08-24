@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import jwt
 from config import JWT_SECRET
 from fastapi import FastAPI, Depends, HTTPException, Request, Cookie
-
 from src.models.models import User
 from src.database.database import get_async_session
 

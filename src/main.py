@@ -1,22 +1,23 @@
+from contextlib import asynccontextmanager
+import httpx
 from fastapi import FastAPI, HTTPException, Cookie, Request, Response, Depends
 from fastapi_users import FastAPIUsers
-from sqlalchemy.ext.asyncio import AsyncSession
-import src.base_config as auth_base_config
-from src.manager import get_user_manager
-from src.models.models import User
-from src.schemas import UserRead, UserCreate
-from src.database.database import create_db_and_tables
-from contextlib import asynccontextmanager
-from src.database.database import get_async_session
-from src import crud, utils, schemas
-import httpx
-from config import HOST, PORT
-import asyncio
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 from redis import asyncio as aioredis
-import datetime
+from sqlalchemy.ext.asyncio import AsyncSession
+
+import src.base_config as auth_base_config
+from src import utils, schemas
+from src.database.database import create_db_and_tables, get_async_session
+from src.database.manager import get_user_manager
+from src.models.models import User
+from src.schemas import UserRead, UserCreate
+from database import crud
+
+# Configuration imports
+from config import HOST, PORT
 
 VACANCY_SERVICE_URL = f'http://{HOST}:{2005}'
 
