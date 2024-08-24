@@ -1,11 +1,11 @@
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 import jwt
-from src.config import JWT_SECRET
+from config import JWT_SECRET
 from fastapi import FastAPI, Depends, HTTPException, Request, Cookie
 
-from src.models import User
-from src.database import get_async_session
+from src.models.models import User
+from src.database.database import get_async_session
 
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):

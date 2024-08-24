@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, IntegerIDMixin
-from src.models import User
+from src.models.models import User
 from src.utils import get_user_db
 
 MANAGER_SECRET = os.getenv("MANAGER_SECRET")

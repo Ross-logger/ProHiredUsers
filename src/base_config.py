@@ -1,8 +1,8 @@
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import AuthenticationBackend, CookieTransport, JWTStrategy
-from src.manager import get_user_manager
-from src.models import User
-from src.config import JWT_SECRET
+from src.database.manager import get_user_manager
+from src.models.models import User
+from config import JWT_SECRET
 
 cookie_transport = CookieTransport(cookie_name="usersAuth", cookie_max_age=3600)
 

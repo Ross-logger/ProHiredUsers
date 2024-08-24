@@ -3,11 +3,11 @@ from fastapi_users import FastAPIUsers
 from sqlalchemy.ext.asyncio import AsyncSession
 import src.base_config as auth_base_config
 from src.manager import get_user_manager
-from src.models import User
+from src.models.models import User
 from src.schemas import UserRead, UserCreate
-from src.database import create_db_and_tables
+from src.database.database import create_db_and_tables
 from contextlib import asynccontextmanager
-from src.database import get_async_session
+from src.database.database import get_async_session
 from src import crud, utils, schemas
 import httpx
 from config import HOST, PORT
