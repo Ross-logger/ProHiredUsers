@@ -88,7 +88,6 @@ async def list_users(db: AsyncSession = Depends(get_async_session), limit: int =
 async def create_vacancy(
         new_vacancy_data: schemas.VacancyCreate,
         request: Request,
-        db: AsyncSession = Depends(get_async_session),
 ):
     jwt_token = request.cookies.get("usersAuth")
     print("JWT:", jwt_token)
@@ -107,8 +106,8 @@ async def create_vacancy(
 
 
 @app.get("/v1/vacancies/{vacancy_id}")
-@cache(expire=60)
-async def get_vacancy(vacancy_id: int, db: AsyncSession = Depends(get_async_session)):
+@cache(expire=30)
+async def get_vacancy(vacancy_id: int):
     async with httpx.AsyncClient() as client:
         response = await client.get(
             VACANCY_SERVICE_URL + f'/v1/vacancies/{vacancy_id}'
@@ -120,7 +119,7 @@ async def get_vacancy(vacancy_id: int, db: AsyncSession = Depends(get_async_sess
 
 
 @app.delete("/v1/vacancies/{vacancy_id}")
-async def delete_vacancy(vacancy_id: int, db: AsyncSession = Depends(get_async_session)):
+async def delete_vacancy(vacancy_id: int):
     async with httpx.AsyncClient() as client:
         response = await client.delete(
             VACANCY_SERVICE_URL + f'/v1/vacancies/{vacancy_id}'
@@ -132,7 +131,7 @@ async def delete_vacancy(vacancy_id: int, db: AsyncSession = Depends(get_async_s
 
 
 @app.get("/v1/vacancies/")
-async def list_vacancies(db: AsyncSession = Depends(get_async_session), limit: int = 100):
+async def list_vacancies(limit: int = 100):
     async with httpx.AsyncClient() as client:
         response = await client.get(
             VACANCY_SERVICE_URL + '/v1/vacancies/',
