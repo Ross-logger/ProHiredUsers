@@ -1,7 +1,7 @@
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 from fastapi import HTTPException
-from sqlalchemy.exc import NoResultFound, SQLAlchemyError
+from sqlalchemy.future import select
 from src.models.models import User
 
 
@@ -21,6 +21,11 @@ async def list_users(db: AsyncSession, limit: int = 100):
     return result.scalars().all()
 
 
+async def get_users_count(db: AsyncSession) -> int:
+    result = await db.execute(select(func.count(User.id)))
+    return result.scalar()
+
+
 async def get_user_by_id(db: AsyncSession, user_id: int):
     result = await db.execute(select(User).where(User.id == user_id))
     return result.scalar_one_or_none()
@@ -29,6 +34,3 @@ async def get_user_by_id(db: AsyncSession, user_id: int):
 async def get_user_by_email(db: AsyncSession, email: str):
     result = await db.execute(select(User).where(User.email == email))
     return result.scalar_one_or_none()
-
-
-

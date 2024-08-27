@@ -5,8 +5,8 @@ from fastapi_users import FastAPIUsers
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
-from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import AsyncSession
+from redis import asyncio as aioredis
 
 import src.base_config as auth_base_config
 from src import utils, schemas
@@ -14,7 +14,7 @@ from src.database.database import create_db_and_tables, get_async_session
 from src.database.manager import get_user_manager
 from src.models.models import User
 from src.schemas import UserRead, UserCreate
-from database import crud
+from src.database import crud
 
 # Configuration imports
 from config import HOST, PORT
@@ -78,6 +78,13 @@ async def about_me(db: AsyncSession = Depends(get_async_session),
     return await crud.get_user_by_id(db, user_id)
 
 
+# @app.get("/v1/users/count")
+# async def get_users_count(db: AsyncSession = Depends(get_async_session)):
+#     users_count = await crud.get_users_count(db)
+#     # return schemas.UserReportRead(count=users_count.scalar())
+#     return {'count': users_count}
+
+
 @app.get("/v1/users/")
 async def list_users(db: AsyncSession = Depends(get_async_session), limit: int = 100):
     users = await crud.list_users(db, limit)
@@ -103,6 +110,15 @@ async def create_vacancy(
             raise HTTPException(status_code=response.status_code, detail=response.json())
 
         return response.json()
+
+
+# # HAVE to stay before the "/v1/vacancies/{vacancy_id}" endpoint
+# @app.get("/v1/vacancies/count", response_model=None)
+# async def get_vacancies_count():
+#     async with httpx.AsyncClient() as client:
+#         response = await client.get(VACANCY_SERVICE_URL + "/v1/vacancies/count")
+#         response.raise_for_status()
+#         return response.json()
 
 
 @app.get("/v1/vacancies/{vacancy_id}")
@@ -141,6 +157,13 @@ async def list_vacancies(limit: int = 100):
         if response.status_code not in ok_status_codes:
             raise HTTPException(status_code=response.status_code, detail=response.json())
         return response.json()
+
+
+# @app.get("/report")
+# async def generate_report():
+#     user_count = await get_users_count()
+#     vacancy_count = await get_vacancies_count()
+#     return {"users": user_count, "vacancies": vacancy_count}
 
 
 if __name__ == "__main__":

@@ -47,3 +47,15 @@ class VacancyCreate(BaseModel):
                 "description": "Develops software solutions."
             }
         }
+
+
+class UserReport(BaseModel):
+    count: int
+
+
+class UserReportWrite(UserReport):
+    pass
+
+
+class UserReportRead(UserReport):
+    pass
