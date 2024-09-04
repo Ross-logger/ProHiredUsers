@@ -169,4 +169,4 @@ async def list_vacancies(limit: int = 100):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host=HOST, port=int(PORT))
+    uvicorn.run("src.main:app", host=HOST, port=int(PORT), reload=True)
