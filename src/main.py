@@ -18,6 +18,7 @@ from src.database import crud
 
 # Configuration imports
 from config import HOST, PORT
+from src.utils import get_user_id_from_cookies
 
 VACANCY_SERVICE_URL = f'http://{HOST}:{2005}'
 
@@ -135,10 +136,11 @@ async def get_vacancy(vacancy_id: int):
 
 
 @app.delete("/v1/vacancies/{vacancy_id}")
-async def delete_vacancy(vacancy_id: int):
+async def delete_vacancy(vacancy_id: int, user_id=Depends(get_user_id_from_cookies)):
     async with httpx.AsyncClient() as client:
         response = await client.delete(
-            VACANCY_SERVICE_URL + f'/v1/vacancies/{vacancy_id}'
+            VACANCY_SERVICE_URL + f'/v1/vacancies/{vacancy_id}',
+            headers={"user_id": str(user_id)}
         )
         if response.status_code not in ok_status_codes:
             raise HTTPException(status_code=response.status_code, detail=response.json())
