@@ -44,4 +44,6 @@ async def about_me() -> None:
             "/v1/users/me",
         )
         print("ABOUT ME RESPONSE:", response.json())
+    assert response.json()["email"] == "string"
     assert response.status_code == 200
+

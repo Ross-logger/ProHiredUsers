@@ -28,9 +28,8 @@ ok_status_codes = [
     202,  # Accepted
     204,  # No Content
     205,  # Reset Content
-    206  # Partial Content
+    206   # Partial Content
 ]
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,7 +37,6 @@ async def lifespan(app: FastAPI):
     redis = aioredis.from_url("redis://localhost")
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
     yield
-
 
 app = FastAPI(title="ProHired", lifespan=lifespan)
 
@@ -59,70 +57,55 @@ app.include_router(
     tags=["auth"],
 )
 
-
-@app.get("/")
+@app.get("/", tags=["home"])
 async def root():
     return {"message": "Welcome to ProHired!"}
 
-
-@app.delete("/v1/users/")
+@app.delete("/v1/users/", tags=["users"])
 async def delete_user(response: Response, db: AsyncSession = Depends(get_async_session),
                       user_id: int = Depends(utils.get_user_id_from_cookies)):
     await crud.delete_self_user(db, user_id)
     response.delete_cookie(key="usersAuth")
     return {"message": "User and their vacancies deleted successfully."}
 
-
-@app.get("/v1/users/me", response_model=schemas.UserRead)
+@app.get("/v1/users/me", response_model=schemas.UserRead, tags=["users"])
 async def about_me(db: AsyncSession = Depends(get_async_session),
                    user_id: int = Depends(utils.get_user_id_from_cookies)):
     return await crud.get_user_by_id(db, user_id)
 
-
-# @app.get("/v1/users/count")
-# async def get_users_count(db: AsyncSession = Depends(get_async_session)):
-#     users_count = await crud.get_users_count(db)
-#     # return schemas.UserReportRead(count=users_count.scalar())
-#     return {'count': users_count}
-
-
-@app.get("/v1/users/")
+@app.get("/v1/users/", tags=["users"])
 async def list_users(db: AsyncSession = Depends(get_async_session), limit: int = 100):
     users = await crud.list_users(db, limit)
     return users
 
-
-@app.post("/v1/vacancies/")
+@app.post("/v1/vacancies/", tags=["vacancies"])
 async def create_vacancy(
         new_vacancy_data: schemas.VacancyCreate,
         request: Request,
 ):
     jwt_token = request.cookies.get("usersAuth")
-    print("JWT:", jwt_token)
-
     async with httpx.AsyncClient() as client:
         response = await client.post(
             VACANCY_SERVICE_URL + '/v1/vacancies/',
             json=new_vacancy_data.dict(),
             headers={"usersAuth": f"{jwt_token}"}
         )
-        print(response)
         if response.status_code not in ok_status_codes:
             raise HTTPException(status_code=response.status_code, detail=response.json())
-
         return response.json()
 
+@app.get("/v1/vacancies/", tags=["vacancies"])
+async def list_vacancies(limit: int = 100):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            VACANCY_SERVICE_URL + '/v1/vacancies/',
+            params={'limit': limit}
+        )
+        if response.status_code not in ok_status_codes:
+            raise HTTPException(status_code=response.status_code, detail=response.json())
+        return response.json()
 
-# # HAVE to stay before the "/v1/vacancies/{vacancy_id}" endpoint
-# @app.get("/v1/vacancies/count", response_model=None)
-# async def get_vacancies_count():
-#     async with httpx.AsyncClient() as client:
-#         response = await client.get(VACANCY_SERVICE_URL + "/v1/vacancies/count")
-#         response.raise_for_status()
-#         return response.json()
-
-
-@app.get("/v1/vacancies/{vacancy_id}")
+@app.get("/v1/vacancies/{vacancy_id}", tags=["vacancies"])
 @cache(expire=30)
 async def get_vacancy(vacancy_id: int):
     async with httpx.AsyncClient() as client:
@@ -131,11 +114,9 @@ async def get_vacancy(vacancy_id: int):
         )
         if response.status_code not in ok_status_codes:
             raise HTTPException(status_code=response.status_code, detail=response.json())
-
         return response.json()
 
-
-@app.delete("/v1/vacancies/{vacancy_id}")
+@app.delete("/v1/vacancies/{vacancy_id}", tags=["vacancies"])
 async def delete_vacancy(vacancy_id: int, user_id=Depends(get_user_id_from_cookies)):
     async with httpx.AsyncClient() as client:
         response = await client.delete(
@@ -144,29 +125,7 @@ async def delete_vacancy(vacancy_id: int, user_id=Depends(get_user_id_from_cooki
         )
         if response.status_code not in ok_status_codes:
             raise HTTPException(status_code=response.status_code, detail=response.json())
-
         return {"message": "Vacancy deleted successfully."}
-
-
-@app.get("/v1/vacancies/")
-async def list_vacancies(limit: int = 100):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            VACANCY_SERVICE_URL + '/v1/vacancies/',
-            params={'limit': limit}
-        )
-        print(response, response.status_code)
-        if response.status_code not in ok_status_codes:
-            raise HTTPException(status_code=response.status_code, detail=response.json())
-        return response.json()
-
-
-# @app.get("/report")
-# async def generate_report():
-#     user_count = await get_users_count()
-#     vacancy_count = await get_vacancies_count()
-#     return {"users": user_count, "vacancies": vacancy_count}
-
 
 if __name__ == "__main__":
     import uvicorn
