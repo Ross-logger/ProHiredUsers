@@ -1,4 +1,7 @@
-image: python:3.9
+image: docker:latest  # Use a Docker image
+
+services:
+  - docker:dind  # Enable Docker-in-Docker
 
 stages:
   - build
