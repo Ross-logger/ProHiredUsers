@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+from typing import List
+
 import httpx
 from fastapi import FastAPI, HTTPException, Cookie, Request, Response, Depends
 from fastapi_users import FastAPIUsers
@@ -73,7 +75,7 @@ async def about_me(db: AsyncSession = Depends(get_async_session),
                    user_id: int = Depends(utils.get_user_id_from_cookies)):
     return await crud.get_user_by_id(db, user_id)
 
-@app.get("/v1/users/", tags=["users"])
+@app.get("/v1/users/", response_model=List[UserRead], tags=["users"])
 async def list_users(db: AsyncSession = Depends(get_async_session), limit: int = 100):
     users = await crud.list_users(db, limit)
     return users
