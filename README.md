@@ -1,6 +1,6 @@
 # ProHiredUsers 🚀
 
-**ProHiredUsers** is a user management service designed as part of the ProHired platform. This service is responsible for handling user-related operations, including registration, authentication, profile management, and user roles. It is built using **Python** and follows a **RESTful architecture** to ensure scalability and maintainability. This project leverages **Docker** for containerization, **Alembic** for migrations, and CI/CD pipelines for automated testing and deployment.
+**ProHiredUsers** is a user management service designed as part of the ProHired platform. This service is responsible for handling user-related operations, including registration, authentication, profile management, and user roles. It is built using **Python** and follows a **RESTful architecture** to ensure scalability and maintainability. This project leverages **Docker** for containerization, **Alembic** for migrations, and **CI/CD pipelines** for automated testing and deployment.
 
 ## Key Features 🔑✨
 
