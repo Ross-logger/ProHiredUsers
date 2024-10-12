@@ -1,7 +1,10 @@
-image: docker:latest  # Use a Docker image
+image: docker:latest
 
 services:
   - docker:dind  # Enable Docker-in-Docker
+
+variables:
+  DOCKER_DRIVER: overlay2
 
 stages:
   - build
@@ -11,7 +14,7 @@ stages:
 build-job:
   stage: build
   script:
-    - echo "Building the application..."
+    - echo "Building the Docker image..."
     - docker build -t myapp-users_service .
 
 test-job:
@@ -19,12 +22,25 @@ test-job:
   script:
     - echo "Running tests..."
     - docker run --rm myapp-users_service pytest
+  artifacts:
+    reports:
+      junit: report.xml
 
 deploy-job:
   stage: deploy
   script:
     - echo "Deploying the application..."
-    - docker-compose up -d
-  environment: production
+    - docker-compose up -d --build
+  environment:
+    name: production
+    url: http://your-production-url.com
   only:
     - master
+
+# Optional security scan stage (e.g., using Bandit for Python security analysis)
+security-scan:
+  stage: test
+  script:
+    - pip install bandit
+    - bandit -r src/  # Run security scans on the source code
+  allow_failure: true  # Does not block the pipeline if it fails
