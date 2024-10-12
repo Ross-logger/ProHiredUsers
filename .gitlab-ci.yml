@@ -12,16 +12,20 @@ stages:
   - test
   - deploy
 
+before_script:
+  - echo "$ENV_FILE" > .env
+  - export $(grep -v '^#' .env | xargs)
+
 # Build the Docker image
 build-job:
   stage: build
   script:
     - echo "Building the Docker image..."
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $CI_DEPLOY_TOKEN_USERNAME -p $CI_DEPLOY_TOKEN_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   only:
-    - branches  # Run on branches only (including master)
+    - branches
 
 # Run tests using the built Docker image
 test-job:
@@ -40,8 +44,7 @@ test-job:
 deploy-job:
   stage: deploy
   script:
-    - echo "Deploying the application..."
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $CI_DEPLOY_TOKEN_USERNAME -p $CI_DEPLOY_TOKEN_PASSWORD $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     - docker-compose up -d --build
   environment:
@@ -49,11 +52,3 @@ deploy-job:
     url: http://your-production-url.com
   only:
     - master
-
-# Optional security scan stage (e.g., using Bandit for Python security analysis)
-security-scan:
-  stage: test
-  script:
-    - pip install bandit
-    - bandit -r src/  # Run security scans on the source code
-  allow_failure: true  # Does not block the pipeline if it fails

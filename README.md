@@ -21,4 +21,3 @@
 - **PostgreSQL**: The relational database used for storing user data.
 - **Docker**: Used for containerization of the application.
 - **GitLab CI/CD**: Continuous integration and deployment pipeline for automated testing and deployment.
-
