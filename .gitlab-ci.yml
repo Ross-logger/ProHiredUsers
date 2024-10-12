@@ -5,31 +5,44 @@ services:
 
 variables:
   DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""  # Disable Docker-in-Docker TLS certificates
 
 stages:
   - build
   - test
   - deploy
 
+# Build the Docker image
 build-job:
   stage: build
   script:
     - echo "Building the Docker image..."
-    - docker build -t myapp-users_service .
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  only:
+    - branches  # Run on branches only (including master)
 
+# Run tests using the built Docker image
 test-job:
   stage: test
   script:
     - echo "Running tests..."
-    - docker run --rm myapp-users_service pytest
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker run --rm $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG pytest --junitxml=report.xml
   artifacts:
     reports:
-      junit: report.xml
+      junit: report.xml  # Save the test report as an artifact
+  dependencies:
+    - build-job  # Ensure the test job runs only after the image is built
 
+# Deploy the application
 deploy-job:
   stage: deploy
   script:
     - echo "Deploying the application..."
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     - docker-compose up -d --build
   environment:
     name: production
