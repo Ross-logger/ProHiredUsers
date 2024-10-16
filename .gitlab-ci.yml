@@ -1,11 +1,7 @@
 image: docker:latest
 
 services:
-  - docker:dind  # Enable Docker-in-Docker
-
-variables:
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""  # Disable Docker-in-Docker TLS certificates
+  - docker:dind  # Docker-in-Docker to run containers in the CI environment
 
 stages:
   - build
@@ -13,42 +9,40 @@ stages:
   - deploy
 
 before_script:
+  # Load environment variables from the .env file
   - echo "$ENV_FILE" > .env
   - export $(grep -v '^#' .env | xargs)
 
-# Build the Docker image
+# Build the Docker images using docker-compose
 build-job:
   stage: build
   script:
-    - echo "Building the Docker image..."
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
-    - docker login -u $CI_DEPLOY_TOKEN_USERNAME -p $CI_DEPLOY_TOKEN_PASSWORD $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - echo "Building Docker images with docker-compose..."
+    - docker-compose build  # Build all services defined in docker-compose.yml
   only:
-    - branches
+    - branches  # Run on all branches
 
-# Run tests using the built Docker image
+# Run tests using the built Docker images
 test-job:
   stage: test
   script:
-    - echo "Running tests..."
-    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    - docker run --rm $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG pytest --junitxml=report.xml
+    - echo "Running tests using docker-compose..."
+    - docker-compose up -d  # Start the services in detached mode
+    - docker-compose exec users_service pytest --junitxml=report.xml  # Run pytest inside the users_service container
   artifacts:
     reports:
       junit: report.xml  # Save the test report as an artifact
   dependencies:
     - build-job  # Ensure the test job runs only after the image is built
 
-# Deploy the application
-deploy-job:
-  stage: deploy
-  script:
-    - docker login -u $CI_DEPLOY_TOKEN_USERNAME -p $CI_DEPLOY_TOKEN_PASSWORD $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    - docker-compose up -d --build
-  environment:
-    name: production
-    url: http://your-production-url.com
-  only:
-    - master
+# Deploy the application using docker-compose
+#deploy-job:
+#  stage: deploy
+#  script:
+#    - echo "Deploying the application..."
+#    - docker-compose up -d --build  # Rebuild and start the services
+#  only:
+#    - master  # Run only on the master branch
+#  environment:
+#    name: production
+#    url: http://localhost  # Update with your actual production URL if needed
