@@ -6,19 +6,18 @@ services:
 stages:
   - build
   - test
-  - deploy
 
 before_script:
-  # Load environment variables from the .env file
+  # Create the .env file from the GitLab CI/CD variable
   - echo "$ENV_FILE" > .env
-  - export $(grep -v '^#' .env | xargs)
+  - docker info  # Check Docker setup
 
-# Build the Docker images using docker-compose
+# Build the Docker images using docker compose
 build-job:
   stage: build
   script:
-    - echo "Building Docker images with docker-compose..."
-    - docker-compose build  # Build all services defined in docker-compose.yml
+    - echo "Building Docker images using docker compose..."
+    - docker compose build  # Build all services defined in docker-compose.yml
   only:
     - branches  # Run on all branches
 
@@ -26,23 +25,11 @@ build-job:
 test-job:
   stage: test
   script:
-    - echo "Running tests using docker-compose..."
-    - docker-compose up -d  # Start the services in detached mode
-    - docker-compose exec users_service pytest --junitxml=report.xml  # Run pytest inside the users_service container
+    - echo "Running tests using docker compose..."
+    - docker compose up -d  # Start the services in detached mode
+    - docker compose exec users_service pytest --junitxml=report.xml  # Run pytest inside the users_service container
   artifacts:
     reports:
-      junit: report.xml  # Save the test report as an artifact
+      junit: report.xml  # Save the test report as an artifact for GitLab
   dependencies:
     - build-job  # Ensure the test job runs only after the image is built
-
-# Deploy the application using docker-compose
-#deploy-job:
-#  stage: deploy
-#  script:
-#    - echo "Deploying the application..."
-#    - docker-compose up -d --build  # Rebuild and start the services
-#  only:
-#    - master  # Run only on the master branch
-#  environment:
-#    name: production
-#    url: http://localhost  # Update with your actual production URL if needed
