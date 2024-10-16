@@ -8,9 +8,11 @@ stages:
   - test
 
 before_script:
-  # Create the .env file from the GitLab CI/CD variable
-  - echo "$ENV_FILE" > .env
-  - docker info  # Check Docker setup
+  # Copy the file stored in ENV_FILE to .env
+  - cp "$ENV_FILE" .env
+
+  # Check Docker setup
+  - docker info
 
 # Build the Docker images using docker compose
 build-job:
