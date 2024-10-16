@@ -7,6 +7,6 @@ class CeleryConfig:
     beat_schedule = {
         'send-daily-report': {
             'task': 'src.celery_tasks.tasks.send_report',
-            'schedule': 20,  # 24 hours in seconds
+            'schedule': 60,
         },
     }
