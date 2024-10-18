@@ -11,9 +11,6 @@ before_script:
   # Copy the file stored in ENV_FILE to .env
   - cp "$ENV_FILE" .env
 
-  # Check Docker setup
-  - docker info
-
 # Build the Docker images using docker compose
 build-job:
   stage: build
@@ -35,3 +32,4 @@ test-job:
       junit: report.xml  # Save the test report as an artifact for GitLab
   dependencies:
     - build-job  # Ensure the test job runs only after the image is built
+  timeout: 2h
