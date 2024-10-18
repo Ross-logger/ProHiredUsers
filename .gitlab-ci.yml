@@ -26,10 +26,7 @@ test-job:
   script:
     - echo "Running tests using docker compose..."
     - docker compose up -d  # Start the services in detached mode
-    - docker compose exec users_service pytest --junitxml=report.xml  # Run pytest inside the users_service container
-  artifacts:
-    reports:
-      junit: report.xml  # Save the test report as an artifact for GitLab
+    - docker compose exec users_service pytest
   dependencies:
     - build-job  # Ensure the test job runs only after the image is built
   timeout: 2h
