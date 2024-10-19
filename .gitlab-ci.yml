@@ -19,6 +19,9 @@ build-job:
     - docker compose build  # Build all services defined in docker-compose.yml
   only:
     - branches  # Run on all branches
+  except:
+    changes:
+      - README.md
 
 # Run tests using the built Docker images
 test-job:
