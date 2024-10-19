@@ -18,6 +18,7 @@ async def override_get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
 
+
 app.dependency_overrides[get_async_session] = override_get_async_session
 
 
@@ -50,10 +51,12 @@ async def create_tables() -> None:
         await conn.run_sync(Base.metadata.create_all)
     print("Tables created!")
 
+
 async def drop_tables() -> None:
     async with test_async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     print("Tables dropped!")
+
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
@@ -62,6 +65,7 @@ async def setup_database():
     yield
     await drop_tables()
 
+
 async def test_root():
     async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -69,10 +73,12 @@ async def test_root():
         response = await ac.get("/")  # Adjust this path as necessary
         assert response.status_code == 200
 
+
 async def test_registration_and_login():
     await register_user()
     await login()
     await about_me()
+
 
 async def test_list_users():
     async with AsyncClient(
