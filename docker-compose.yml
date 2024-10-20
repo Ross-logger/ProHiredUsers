@@ -2,6 +2,12 @@ services:
   postgres:
     container_name: postgres
     image: postgres:15
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     platform: linux/amd64
     ports:
       - "5433:5432"
@@ -12,6 +18,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
 
   redis:
     container_name: redis
