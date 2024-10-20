@@ -8,7 +8,6 @@ stages:
   - test
 
 before_script:
-  # Copy the file stored in ENV_FILE to .env
   - cp "$ENV_FILE" .env
 
 # Build the Docker images using docker compose
@@ -29,7 +28,15 @@ test-job:
   script:
     - echo "Running tests using docker compose..."
     - docker compose up -d
-    - docker compose exec users_service pytest ./tests -v -s
+    - mkdir -p test-reports  # Create a directory for reports on the host machine
+    - docker compose exec users_service pytest ./tests -v -s --junitxml=/app/test-reports/results.xml  # Run tests and generate a JUnit XML report
+    - docker cp $(docker compose ps -q users_service):/app/test-reports ./test-reports  # Copy the test reports from the container to the host
   dependencies:
-    - build-job  # Ensure the test job runs only after the image is built
+    - build-job
+  artifacts:
+    paths:
+      - test-reports/results.xml  # Save the test report as an artifact
+    expire_in: 1 week  # Artifacts will be cleaned up after 1 week
+    reports:
+      junit: test-reports/results.xml  # Enable test report visualization in GitLab
   timeout: 2h

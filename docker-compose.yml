@@ -3,10 +3,6 @@ services:
     container_name: postgres
     image: postgres:15
     platform: linux/amd64
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5433:5432"
     env_file:
