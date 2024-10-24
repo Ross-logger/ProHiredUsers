@@ -2,7 +2,6 @@ from typing import AsyncGenerator
 import asyncpg
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.sql import text
 from config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
 
 # Connect to the 'postgres' database to create the database if it doesn't exist
@@ -20,11 +19,9 @@ async_session_maker = async_sessionmaker(async_engine, expire_on_commit=False)
 
 async def create_db_if_not_exists():
     """Create the target database if it doesn't exist."""
+    conn = None
     try:
-        # Use asyncpg directly to connect to the 'postgres' default database
-        conn = await asyncpg.connect(
-            user=DB_USER, password=DB_PASS, database="postgres", host=DB_HOST, port=DB_PORT
-        )
+        conn = await asyncpg.connect(POSTGRES_DATABASE_URL)
 
         # Check if the target database exists
         result = await conn.fetchval(f"SELECT 1 FROM pg_database WHERE datname = '{DB_NAME}'")
@@ -40,7 +37,8 @@ async def create_db_if_not_exists():
     except Exception as e:
         print(f"Error while checking/creating database: {e}")
     finally:
-        await conn.close()
+        if conn:
+            await conn.close()
 
 
 async def create_db_and_tables():

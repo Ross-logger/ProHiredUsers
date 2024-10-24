@@ -1,7 +1,7 @@
 image: docker:latest
 
 services:
-  - docker:dind  # Docker-in-Docker to run containers in the CI environment
+  - docker:dind
 
 variables:
   DOCKER_HOST: tcp://docker:2375
@@ -12,6 +12,7 @@ stages:
   - test
 
 before_script:
+  - echo "Copying environment file..."
   - cp "$ENV_FILE" .env
 
 # Build the Docker images using docker compose
@@ -19,9 +20,9 @@ build-job:
   stage: build
   script:
     - echo "Building Docker images using docker compose..."
-    - docker compose build  # Build all services defined in docker-compose.yml
+    - docker compose build
   only:
-    - branches  # Run on all branches
+    - branches
   except:
     changes:
       - README.md
