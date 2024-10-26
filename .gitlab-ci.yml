@@ -30,12 +30,24 @@ build-job:
 # Run tests using the built Docker images
 test-job:
   stage: test
+
+  before_script:
+    # Ensure Docker is running and create the shared network
+    - docker info  # Check if Docker is running correctly
+    - docker network create shared_network || true  # Create the shared network (ignore if already exists)
+
   script:
     - echo "Running tests using docker compose..."
     - docker compose up -d
     - mkdir -p test-reports  # Create a directory for reports on the host machine
     - docker compose exec users_service pytest ./tests -v -s --junitxml=/app/test-reports/results.xml  # Run tests and generate a JUnit XML report
     - docker cp $(docker compose ps -q users_service):/app/test-reports ./test-reports  # Copy the test reports from the container to the host
+
+  after_script:
+    # Clean up: stop services and remove resources
+    - docker-compose -f users_service/docker-compose.yml down
+    - docker-compose -f vacancies_service/docker-compose.yml down
+    - docker network rm shared_network || true
   dependencies:
     - build-job
   artifacts:
@@ -44,4 +56,6 @@ test-job:
     expire_in: 1 week  # Artifacts will be cleaned up after 1 week
     reports:
       junit: test-reports/results.xml  # Enable test report visualization in GitLab
-  timeout: 2h
+  except:
+    changes:
+      - README.md

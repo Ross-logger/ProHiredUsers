@@ -8,7 +8,6 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    platform: linux/amd64
     ports:
       - "5433:5432"
     env_file:
@@ -18,12 +17,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+    networks:
+      - shared_network
 
   redis:
     container_name: users_redis
     image: redis:7.2.4
-    platform: linux/amd64
     ports:
       - "6379:6379"
     volumes:
@@ -31,32 +30,34 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - shared_network
 
   users_service:
     container_name: users_service
     build:
       context: .
-    platform: linux/amd64
     ports:
-      - "8000:8000"
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
+      - "8004:8004"
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8004
     env_file:
       - .env
     depends_on:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+    networks:
+      - shared_network
 
   celery_beat:
     container_name: users_celery_beat
     build:
       context: .
-    platform: linux/amd64
     command: celery -A src.celery_tasks.tasks beat --loglevel=info
     env_file:
       - .env
@@ -65,7 +66,13 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    networks:
+      - shared_network
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  shared_network:
+    external: true

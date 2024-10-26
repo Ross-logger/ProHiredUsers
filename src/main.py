@@ -17,21 +17,13 @@ from src.database.manager import get_user_manager
 from src.models.models import User
 from src.schemas import UserRead, UserCreate
 from src.database import crud
+from config import ok_status_codes
 
 # Configuration imports
-from config import HOST, PORT
+from config import VACANCY_SERVICE_URL
 from src.utils import get_user_id_from_cookies
 
-VACANCY_SERVICE_URL = f'http://{HOST}:{2005}'
 
-ok_status_codes = [
-    200,  # OK
-    201,  # Created
-    202,  # Accepted
-    204,  # No Content
-    205,  # Reset Content
-    206  # Partial Content
-]
 
 
 @asynccontextmanager
@@ -151,4 +143,4 @@ async def delete_vacancy(vacancy_id: int, user_id=Depends(get_user_id_from_cooki
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("src.main:app", host=HOST, port=int(PORT), reload=True)
+    uvicorn.run("src.main:app", host="localhost", port=8005, reload=True)

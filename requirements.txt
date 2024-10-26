@@ -29,7 +29,6 @@ pluggy==1.5.0
 prompt_toolkit==3.0.47
 psycopg2-binary==2.9.9
 pytest==8.3.3
-pytest-asyncio==0.20.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-multipart==0.0.9
