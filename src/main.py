@@ -19,7 +19,6 @@ from src.schemas import UserRead, UserCreate
 from src.database import crud
 from config import ok_status_codes
 
-# Configuration imports
 from config import VACANCY_SERVICE_URL
 from src.utils import get_user_id_from_cookies
 
@@ -117,7 +116,7 @@ async def list_vacancies(limit: int = 100):
 
 
 @app.get("/v1/vacancies/{vacancy_id}", tags=["vacancies"])
-@cache(expire=30)
+@cache(expire=60)
 async def get_vacancy(vacancy_id: int):
     async with httpx.AsyncClient() as client:
         response = await client.get(
